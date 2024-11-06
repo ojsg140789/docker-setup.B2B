@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  frontend:
+    image: omarjsg/b2b-take-home-app
+    ports:
+      - "4200:4200"  # Mapea el puerto 4200 del contenedor al puerto 4200 del host
+    depends_on:
+      - api
+    networks:
+      - app-network
+
+  api:
+    image: omarjsg/b2b-take-home-api
+    ports:
+      - "5098:80"  # Mapea el puerto 80 del contenedor al puerto 5098 del host
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=b2b;Username=postgres;Password=postgres
+    depends_on:
+      - postgres
+    networks:
+      - app-network
+
+  postgres:
+    image: omarjsg/b2b-take-home-db
+    container_name: my-postgres-container
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./database/sql:/docker-entrypoint-initdb.d/sql
+      - ./database/python:/docker-entrypoint-initdb.d/python
+      - ./database/data:/docker-entrypoint-initdb.d/data
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
